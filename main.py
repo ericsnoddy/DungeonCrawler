@@ -6,7 +6,7 @@ import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import WIDTH, HEIGHT
+from constants import WIDTH, HEIGHT, BG, FPS
 from character import Character
 
 
@@ -16,16 +16,42 @@ pg.init()
 WIN = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption('Dungeon Crawler')
 
-
+clock = pg.time.Clock()
 
 # create player
 player = Character(100,100)
+
+# player control vars
+moving_l = False
+moving_r = False
+moving_u = False
+moving_d = False
 
 
 
 # game loop
 running = True
 while running:
+    
+    # control the framerate
+    clock.tick(FPS)
+
+    # bg
+    WIN.fill(BG)
+
+    # calculate player movement
+    dx = 0
+    dy = 0
+
+    if moving_r:
+        dx = 5
+    if moving_l:
+        dx = -5
+    if moving_d:
+        dy = 5
+    if moving_u:
+        dy = -5
+    
 
 
     # draw player on screen
@@ -40,16 +66,30 @@ while running:
 
         # input handler
         if event.type == KEYDOWN:
-            if event.key == pg.K_a:
-                print('left')
-            if event.key == pg.K_d:
-                print('right')
-            if event.key == pg.K_w:
-                print('up')
-            if event.key == pg.K_s:
-                print('down')
-            
 
+            if event.key == pg.K_a:
+                moving_l = True
+            if event.key == pg.K_d:
+                moving_r = True
+            if event.key == pg.K_w:
+                moving_u = True
+            if event.key == pg.K_s:
+                moving_d = True
+
+        if event.type == KEYUP:
+
+            if event.key == pg.K_a:
+                moving_l = False
+            if event.key == pg.K_d:
+                moving_r = False
+            if event.key == pg.K_w:
+                moving_u = False
+            if event.key == pg.K_s:
+                moving_d = False
+
+            
+    # move the player
+    player.move(dx, dy)
 
     # update the screen
     pg.display.update()
