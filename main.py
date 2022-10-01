@@ -21,7 +21,6 @@ pg.display.set_caption('Dungeon Crawler')
 clock = pg.time.Clock()
 
 ### helper functions
-# scale
 def scale_img(image, scale):
     w = image.get_width()
     h = image.get_height()

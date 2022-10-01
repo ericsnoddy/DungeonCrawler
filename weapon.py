@@ -27,7 +27,11 @@ class Weapon:
 
     def draw(self, surf):
 
-        surf.blit(self.image, self.rect)
-        debug([
-            f'{self.angle}'
-        ])
+        self.image = pg.transform.rotate(self.original_image, self.angle)
+        x_adjust = self.rect.centerx - self.image.get_width()//2
+        y_adjust = self.rect.centery - self.image.get_height()//2
+        surf.blit(self.image, (x_adjust, y_adjust))
+
+        # debug([
+        #     f'{self.angle}'
+        # ])
