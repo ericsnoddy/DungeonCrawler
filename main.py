@@ -26,21 +26,29 @@ def scale_img(image, scale):
     h = image.get_height()
     return pg.transform.scale(image, (w * scale, h * scale))
 
-# load animation frames per type
+
+# animations by mob type
+mob_animations = []
+mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
+# animations by action - nested
 animation_types = ['idle', 'run']
-animations = []
-for animation_type in animation_types:
 
-    temp_list = []    
-    for i in range(4):
+for mob_type in mob_types:
+    
+    animation_list = []
+    for animation_type in animation_types:
 
-        img = pg.image.load(join('assets', 'images', 'characters', 'elf', f'{animation_type}', f'{i}.png')).convert_alpha()
-        img = scale_img(img, SCALE)
-        temp_list.append(img)
+        temp_list = []    
+        for i in range(4):
 
-    animations.append(temp_list)    
+            img = pg.image.load(join('assets', 'images', 'characters', f'{mob_type}', f'{animation_type}', f'{i}.png')).convert_alpha()
+            img = scale_img(img, SCALE)
 
-player = Character(100, 100, animations)
+            temp_list.append(img)
+        animation_list.append(temp_list)
+    mob_animations.append(animation_list)
+
+player = Character(100, 100, mob_animations, 4)
 
 # player control vars
 moving_l = False

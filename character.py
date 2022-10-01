@@ -2,17 +2,22 @@
 import pygame as pg
 
 # local
-from constants import RED
+from constants import ANIMATION_SPEED, RED
 
 class Character:
-    def __init__(self, x, y, animations):
-        self.animations = animations
-        self.action = 0     # 0 - 'idle', 1 - 'run'
+    def __init__(self, x, y, mob_animations, char_type):
+
+        self.char_type = char_type  # int corresponds to mob_types index (see main.py)
+        self.animation_list = mob_animations[self.char_type]
+
+        self.action = 0     # 0 - 'idle', 1 - 'run'        
         self.facing_left = False
         self.running = False
+
         self.frame_index = 0
         self.update_time = pg.time.get_ticks()
-        self.image = self.animations[self.action][self.frame_index]
+
+        self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pg.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
 
@@ -51,16 +56,16 @@ class Character:
             self.update_action(1)
         else: self.update_action(0)
 
-        animation_cooldown = 70
+        animation_cooldown = ANIMATION_SPEED
 
         # update image
-        self.image = self.animations[self.action][self.frame_index]
+        self.image = self.animation_list[self.action][self.frame_index]
 
         # check if enough time has passed
         now = pg.time.get_ticks()
         if now - self.update_time > animation_cooldown:
             self.frame_index += 1
-            if self.frame_index >= len(self.animations[self.action]):
+            if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
             self.update_time = now
 
