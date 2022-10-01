@@ -26,14 +26,21 @@ def scale_img(image, scale):
     h = image.get_height()
     return pg.transform.scale(image, (w * scale, h * scale))
 
-# load frames
-animation_list = []
-for i in range(4):
-    img = pg.image.load(join('assets', 'images', 'characters', 'elf', 'idle', f'{i}.png')).convert_alpha()
-    img = scale_img(img, SCALE)
-    animation_list.append(img)
+# load animation frames per type
+animation_types = ['idle', 'run']
+animations = []
+for animation_type in animation_types:
 
-player = Character(100, 100, animation_list)
+    temp_list = []    
+    for i in range(4):
+
+        img = pg.image.load(join('assets', 'images', 'characters', 'elf', f'{animation_type}', f'{i}.png')).convert_alpha()
+        img = scale_img(img, SCALE)
+        temp_list.append(img)
+
+    animations.append(temp_list)    
+
+player = Character(100, 100, animations)
 
 # player control vars
 moving_l = False
@@ -53,20 +60,17 @@ while running:
     # bg
     WIN.fill(BG)
 
-
-
-    # calculate player movement
-    dx = 0
-    dy = 0
+    # player movement
+    direction_vect = pg.math.Vector2(0,0)
 
     if moving_r:
-        dx = SPEED
+        direction_vect[0] = SPEED
     if moving_l:
-        dx = -SPEED
+        direction_vect[0] = -SPEED
     if moving_d:
-        dy = SPEED
+        direction_vect[1] = SPEED
     if moving_u:
-        dy = -SPEED
+        direction_vect[1] = -SPEED
     
     # update player
     player.update()
@@ -107,7 +111,7 @@ while running:
 
             
     # move the player
-    player.move(dx, dy)
+    player.move(direction_vect)
 
     # update the screen
     pg.display.update()
