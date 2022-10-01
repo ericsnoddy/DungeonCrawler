@@ -1,8 +1,8 @@
-# 3rd party
+# installed
 import pygame as pg
 
 # local
-from constants import ANIMATION_SPEED, RED
+from constants import ANIMATION_SPEED, ELF_OFFSET, SCALE, RED
 
 class Character:
     def __init__(self, x, y, mob_animations, char_type):
@@ -72,6 +72,11 @@ class Character:
 
     def draw(self, surf):
 
-        flippped_image = pg.transform.flip(self.image, self.facing_left, False)
-        surf.blit(flippped_image, self.rect)
+        flipped_image = pg.transform.flip(self.image, self.facing_left, False)
+
+        # adjust the elf sprite
+        if self.char_type == 0:
+            surf.blit(flipped_image, (self.rect.x, self.rect.y - ELF_OFFSET * SCALE))
+        else:
+            surf.blit(flipped_image, self.rect)
         pg.draw.rect(surf, RED, self.rect, 1)

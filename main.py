@@ -2,12 +2,12 @@
 import sys
 from os.path import join
 
-# 3rd party
+# installed
 import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import WIDTH, HEIGHT, FPS, SCALE, SPEED, BG
+from constants import WIDTH, HEIGHT, FPS, SCALE, WEAP_SCALE, SPEED, BG
 from character import Character
 from weapon import Weapon
 
@@ -28,7 +28,7 @@ def scale_img(image, scale):
     return pg.transform.scale(image, (w * scale, h * scale))
 
 # load weapon images
-bow_image = pg.image.load(join('assets', 'images', 'weapons', 'bow.png')).convert_alpha()
+bow_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'bow.png')).convert_alpha(), WEAP_SCALE)
 # arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
 # fireball_image = pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha()
 
