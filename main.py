@@ -7,7 +7,7 @@ import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import WIDTH, HEIGHT, FPS, SPEED, BG
+from constants import WIDTH, HEIGHT, FPS, SCALE, SPEED, BG
 from character import Character
 
 
@@ -19,10 +19,21 @@ pg.display.set_caption('Dungeon Crawler')
 
 clock = pg.time.Clock()
 
+### helper functions
+# scale
+def scale_img(image, scale):
+    w = image.get_width()
+    h = image.get_height()
+    return pg.transform.scale(image, (w * scale, h * scale))
 
-# create player
-player_image = pg.image.load(join('assets', 'images', 'characters', 'elf', 'idle', '0.png')).convert_alpha()
-player = Character(100, 100, player_image)
+# load frames
+animation_list = []
+for i in range(4):
+    img = pg.image.load(join('assets', 'images', 'characters', 'elf', 'idle', f'{i}.png')).convert_alpha()
+    img = scale_img(img, SCALE)
+    animation_list.append(img)
+
+player = Character(100, 100, animation_list)
 
 # player control vars
 moving_l = False
@@ -57,7 +68,8 @@ while running:
     if moving_u:
         dy = -SPEED
     
-
+    # update player
+    player.update()
 
     # draw player on screen
     player.draw(WIN)
