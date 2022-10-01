@@ -28,7 +28,7 @@ def scale_img(image, scale):
 
 # load weapon images
 bow_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'bow.png')).convert_alpha(), WEAP_SCALE)
-# arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
+arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
 # fireball_image = pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha()
 
 # build nested animations list by character, action, and frame_index
@@ -48,11 +48,6 @@ for mob_type in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
-# create player
-player = Character(100, 100, mob_animations, 0)
-
-# create weapon
-bow = Weapon(bow_image)
 
 # player control vars
 moving_l = False
@@ -60,6 +55,15 @@ moving_r = False
 moving_u = False
 moving_d = False
 
+
+# create player
+player = Character(100, 100, mob_animations, 0)
+
+# create weapon
+bow = Weapon(bow_image, arrow_image)
+
+# create sprite groups
+arrow_group = pg.sprite.Group()
 
 
 # game loop
@@ -85,15 +89,20 @@ while running:
         direction_vect[1] = -SPEED
     
     # update player
-    player.update()
-    bow.update(player)
+    player.update()    
 
-    # draw player on screen
+    # update bow and arrow
+    arrow = bow.update(player)
+    if arrow:
+        arrow_group.add(arrow)
+    for arrow in arrow_group.sprites():
+        arrow.update()
+
     player.draw(WIN)
     bow.draw(WIN)
-
-
-
+    for arrow in arrow_group.sprites():
+        arrow.draw(WIN)
+    
     # event loop
     for event in pg.event.get():
 

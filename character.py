@@ -26,7 +26,7 @@ class Character:
 
     def move(self, direction_vect):
 
-        # infer image direction from movement
+        # infer image direction from x-axis movement
         if direction_vect[0] < 0:
             self.facing_left = True
         if direction_vect[0] > 0:
