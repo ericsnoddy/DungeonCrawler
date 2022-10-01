@@ -1,6 +1,7 @@
 __pycache__/
 **/__pycache__
 __pycache__/*
+__pycache__
 __pycache__/constants.*
 __pycache__/constants*
 __pycache__/character.*
