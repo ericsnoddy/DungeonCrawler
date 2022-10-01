@@ -1,12 +1,13 @@
 # std lib
 import sys
+from os.path import join
 
 # 3rd party
 import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import WIDTH, HEIGHT, BG, FPS
+from constants import WIDTH, HEIGHT, FPS, SPEED, BG
 from character import Character
 
 
@@ -18,8 +19,10 @@ pg.display.set_caption('Dungeon Crawler')
 
 clock = pg.time.Clock()
 
+
 # create player
-player = Character(100,100)
+player_image = pg.image.load(join('assets', 'images', 'characters', 'elf', 'idle', '0.png')).convert_alpha()
+player = Character(100, 100, player_image)
 
 # player control vars
 moving_l = False
@@ -39,23 +42,26 @@ while running:
     # bg
     WIN.fill(BG)
 
+
+
     # calculate player movement
     dx = 0
     dy = 0
 
     if moving_r:
-        dx = 5
+        dx = SPEED
     if moving_l:
-        dx = -5
+        dx = -SPEED
     if moving_d:
-        dy = 5
+        dy = SPEED
     if moving_u:
-        dy = -5
+        dy = -SPEED
     
 
 
     # draw player on screen
     player.draw(WIN)
+
 
 
     # event loop
