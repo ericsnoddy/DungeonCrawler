@@ -9,6 +9,7 @@ from pygame.locals import *
 # local
 from constants import WIDTH, HEIGHT, FPS, SCALE, SPEED, BG
 from character import Character
+from weapon import Weapon
 
 
 
@@ -26,18 +27,18 @@ def scale_img(image, scale):
     h = image.get_height()
     return pg.transform.scale(image, (w * scale, h * scale))
 
+# load weapon images
+bow_image = pg.image.load(join('assets', 'images', 'weapons', 'bow.png')).convert_alpha()
+# arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
+# fireball_image = pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha()
 
-# animations by mob type
+# build nested animations list by character, action, and frame_index
 mob_animations = []
 mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
-# animations by action - nested
 animation_types = ['idle', 'run']
-
-for mob_type in mob_types:
-    
+for mob_type in mob_types:    
     animation_list = []
     for animation_type in animation_types:
-
         temp_list = []    
         for i in range(4):
 
@@ -48,7 +49,11 @@ for mob_type in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
-player = Character(100, 100, mob_animations, 4)
+# create player
+player = Character(100, 100, mob_animations, 0)
+
+# create weapon
+bow = Weapon(bow_image)
 
 # player control vars
 moving_l = False
@@ -82,9 +87,11 @@ while running:
     
     # update player
     player.update()
+    bow.update(player)
 
     # draw player on screen
     player.draw(WIN)
+    bow.draw(WIN)
 
 
 
