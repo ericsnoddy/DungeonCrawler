@@ -1,5 +1,6 @@
 # std lib
 import math
+from random import randint
 
 # installed
 import pygame as pg
@@ -27,8 +28,8 @@ class Weapon:
 
         mouse_pos = pg.mouse.get_pos()              
         x_dist = mouse_pos[0] - self.rect.centerx
-        y_dist = -(mouse_pos[1] - self.rect.centery)
-        # calc the angle in degress where E:0, N: 90, W: 180, S: -90
+        y_dist = -(mouse_pos[1] - self.rect.centery)   # neg b/c pygame reverses y-axis
+        # calc the angle in degrees where E:0, N: 90, W: 180, S: -90
         # using the arc-tangent of the distance y/x method
         self.angle = math.degrees(math.atan2(y_dist, x_dist))
 
@@ -64,11 +65,11 @@ class Arrow(pg.sprite.Sprite):
         self.angle = angle # sprite orientation reqs adjustment by 90 deg
         self.image = pg.transform.rotate(self.original_image, self.angle - 90)
         self.rect = self.image.get_rect(center = (x,y))
-        # calc hor and vert speeds based on angle
+        # calc hor and vert speeds based on angle (neg b/c pygame reverses y-axis)
         self.dx = math.cos(math.radians(self.angle)) * ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * ARROW_SPEED)
 
-    def update(self):
+    def update(self, enemy_list):
 
         # reposition based on speed
         self.rect.x += self.dx
@@ -77,6 +78,14 @@ class Arrow(pg.sprite.Sprite):
         # check if offscreen
         if self.rect.right < 0 or self.rect.left > WIDTH or self.rect.bottom < 0 or self.rect.top > HEIGHT:
             self.kill()
+
+        # check collision with enemies
+        for enemy in enemy_list:
+            if enemy.rect.colliderect(self.rect) and enemy.alive:
+                damage = 10 + randint(-5, 5)
+                enemy.health -= damage
+                self.kill() # remove arrow
+                break   # one enemy per arrow
 
     def draw(self, surf):
 

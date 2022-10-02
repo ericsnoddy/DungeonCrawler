@@ -5,15 +5,13 @@ import pygame as pg
 from constants import ANIMATION_SPEED, ELF_OFFSET, SCALE, RED
 
 class Character:
-    def __init__(self, x, y, mob_animations, char_type):
+    def __init__(self, x, y, health, mob_animations, char_type):
 
         self.char_type = char_type  # int corresponds to mob_types index (see main.py)
         self.animation_list = mob_animations[self.char_type]
-
         self.action = 0     # 0 - 'idle', 1 - 'run'        
         self.facing_left = False
         self.running = False
-
         self.frame_index = 0
         self.update_time = pg.time.get_ticks()
 
@@ -21,8 +19,8 @@ class Character:
         self.rect = pg.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
 
-        # animation
-        
+        self.health = health
+        self.alive = True
 
     def move(self, direction_vect):
 
@@ -50,6 +48,11 @@ class Character:
             self.update_time = pg.time.get_ticks()
 
     def update(self):
+
+        # check if char is alive
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
 
         # check what action the player is performing
         if self.running:
