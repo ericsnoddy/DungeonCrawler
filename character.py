@@ -21,6 +21,7 @@ class Character:
 
         self.health = health
         self.alive = True
+        self.score = 0
 
     def move(self, direction_vect):
 

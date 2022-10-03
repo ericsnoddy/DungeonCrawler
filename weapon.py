@@ -71,6 +71,10 @@ class Arrow(pg.sprite.Sprite):
 
     def update(self, enemy_list):
 
+        # reset variable
+        damage = 0
+        damage_pos = None
+
         # reposition based on speed
         self.rect.x += self.dx
         self.rect.y += self.dy
@@ -83,9 +87,12 @@ class Arrow(pg.sprite.Sprite):
         for enemy in enemy_list:
             if enemy.rect.colliderect(self.rect) and enemy.alive:
                 damage = 10 + randint(-5, 5)
+                damage_pos = enemy.rect
                 enemy.health -= damage
                 self.kill() # remove arrow
                 break   # one enemy per arrow
+        
+        return damage, damage_pos
 
     def draw(self, surf):
 
