@@ -1,7 +1,6 @@
 # std lib
 import sys
 from os.path import join
-from numpy import str0
 
 # installed
 import pygame as pg
@@ -56,7 +55,7 @@ def draw_info_panel():
             WIN.blit(heart_empty, (10 + i * 50, 0))
 
     # show score
-    draw_text(f'Score: {player.score}', font, WHITE, WIDTH - 100, 50)
+    draw_text(f'x{player.score}', font, WHITE, WIDTH - 100, 15)
 
 # displaying damage
 class DamageText(pg.sprite.Sprite):
@@ -124,6 +123,9 @@ bow = Weapon(bow_image, arrow_image)
 damage_text_group = pg.sprite.Group()
 arrow_group = pg.sprite.Group()
 item_group = pg.sprite.Group()
+
+score_coin = Item(WIDTH - 115, 23, 0, coin_images)
+item_group.add(score_coin)
 
 potion = Item(200, 200, 1, [red_potion])
 item_group.add(potion)
@@ -196,6 +198,8 @@ while running:
     damage_text_group.draw(WIN)
     item_group.draw(WIN)
     draw_info_panel()
+    score_coin.draw(WIN)
+    
     
     # event loop
     for event in pg.event.get():

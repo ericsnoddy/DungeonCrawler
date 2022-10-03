@@ -1,6 +1,6 @@
 import pygame as pg
 
-from constants import ITEM_ANIMATION_SPEED, ELF_HEALTH, POTION_STRENGTH, COIN_VALUE
+from constants import ITEM_ANIMATION_SPEED, ELF_HEALTH, POTION_STRENGTH
 
 class Item(pg.sprite.Sprite):
     def __init__(self, x, y, item_type, animation_list):
@@ -19,7 +19,7 @@ class Item(pg.sprite.Sprite):
         if self.rect.colliderect(player.rect):
             # coin collected
             if self.item_type == 0:
-                player.score += COIN_VALUE
+                player.score += 1
             elif self.item_type == 1:
                 player.health += POTION_STRENGTH
                 if player.health > ELF_HEALTH:
@@ -36,4 +36,7 @@ class Item(pg.sprite.Sprite):
             self.update_time = now
         if self.frame_index >= len(self.animation_list):
             self.frame_index = 0
+
+    def draw(self, surf):
+        surf.blit(self.image, self.rect)
             

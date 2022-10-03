@@ -16,7 +16,6 @@ ARROW_SPEED = 10  # px per frame
 # game attributes
 ELF_HEALTH = 100
 POTION_STRENGTH = 25
-COIN_VALUE = 1
 
 BG = (40, 25, 25)
 RED = (255, 0, 0)
