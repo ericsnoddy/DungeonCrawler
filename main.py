@@ -76,6 +76,8 @@ class DamageText(pg.sprite.Sprite):
         if self.counter > 30:
             self.kill()
 
+### GAME SETUP ###
+
 # load heart images
 heart_empty = scale_img(pg.image.load(join('assets', 'images', 'items', 'heart_empty.png')).convert_alpha(), ITEM_SCALE)
 heart_half = scale_img(pg.image.load(join('assets', 'images', 'items', 'heart_half.png')).convert_alpha(), ITEM_SCALE)
