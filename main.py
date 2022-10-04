@@ -1,5 +1,6 @@
 # std lib
 import sys
+from csv import reader
 from os.path import join
 
 # installed
@@ -7,10 +8,17 @@ import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import WIDTH, HEIGHT, FPS, SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, SPEED, ELF_HEALTH, BG, RED, WHITE, PANEL
+from constants import (
+    WIDTH, HEIGHT, FPS, 
+    TILESIZE, TILE_TYPES, MAP_ROWS, MAP_COLS,
+    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, 
+    SPEED, ELF_HEALTH, 
+    BG, RED, WHITE, PANEL
+)
 from character import Character
 from weapon import Weapon
 from items import Item
+from world import World
 
 
 
@@ -24,7 +32,16 @@ clock = pg.time.Clock()
 # define font
 font = pg.font.Font(join('assets', 'fonts', 'AtariClassic.ttf'), 20)
 
+# define game variables
+level = 1
+screen_scroll = [0, 0]
+
+
+
+
+
 ### HELPER FUNCTIONS ###
+
 def scale_img(image, scale):
     w = image.get_width()
     h = image.get_height()
@@ -54,6 +71,8 @@ def draw_info_panel():
         else:
             WIN.blit(heart_empty, (10 + i * 50, 0))
 
+    # show level
+    draw_text('Level: ' + str(level), font, WHITE, WIDTH // 2, 15)
     # show score
     draw_text(f'x{player.score}', font, WHITE, WIDTH - 100, 15)
 
@@ -67,6 +86,10 @@ class DamageText(pg.sprite.Sprite):
 
     def update(self):
         
+        # reposition based on screen_scroll
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+
         # float the damage text
         self.rect.y -= 1
 
@@ -74,6 +97,11 @@ class DamageText(pg.sprite.Sprite):
         self.counter += 1
         if self.counter > 30:
             self.kill()
+
+
+
+
+
 
 ### GAME SETUP ###
 
@@ -94,6 +122,31 @@ bow_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'bow.png
 arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
 # fireball_image = pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha()
 
+item_images = []
+item_images.append(coin_images)
+item_images.append(red_potion)
+
+# load tile map images
+tile_list = []
+for x in range(TILE_TYPES):
+    tile_image = pg.image.load(join('assets', 'images', 'tiles', f'{x}.png'))
+    tile_image = pg.transform.scale(tile_image, (TILESIZE, TILESIZE))
+    tile_list.append(tile_image)
+
+# create a list of a list of '-1's populating entire map ROWS*COLS
+world_data = []
+for row in range(MAP_ROWS):
+    r = [-1] * MAP_COLS  # '*' operator acts to create a list with MAP_COLS number of values
+    world_data.append(r)
+
+
+with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
+    csv_reader = reader(csv_file, delimiter=',')
+    for x, row in enumerate(csv_reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+
+
 # build nested animations list by character, action, and frame_index
 mob_animations = []
 mob_types = ['elf', 'imp', 'skeleton', 'goblin', 'muddy', 'tiny_zombie', 'big_demon']
@@ -111,10 +164,13 @@ for mob_type in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
+# create world
+world = World()
+world.process_data(world_data, tile_list, item_images, mob_animations)
 
-# create player
-# player = Character(100, 100, ELF_HEALTH, mob_animations, 0)
-player = Character(100, 100, 70, mob_animations, 0)
+# create entities
+player = world.player
+enemy_list = world.enemies
 
 # create weapon
 bow = Weapon(bow_image, arrow_image)
@@ -124,19 +180,11 @@ damage_text_group = pg.sprite.Group()
 arrow_group = pg.sprite.Group()
 item_group = pg.sprite.Group()
 
-score_coin = Item(WIDTH - 115, 23, 0, coin_images)
+score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
-
-potion = Item(200, 200, 1, [red_potion])
-item_group.add(potion)
-
-coin = Item(300, 300, 0, coin_images)
-item_group.add(coin)
-
-# create enemy
-enemy = Character(200, 300, 100, mob_animations, 1)
-enemy_list = []
-enemy_list.append(enemy)
+# add items from level data
+for item in world.item_list:
+    item_group.add(item)
 
 # player control vars
 moving_l = False
@@ -145,7 +193,11 @@ moving_u = False
 moving_d = False
 
 
+
+
+
 ### GAME LOOP ###
+
 running = True
 while running:
     
@@ -168,27 +220,27 @@ while running:
         direction_vect[1] = -SPEED
     
     # move the player
-    player.move(direction_vect)
+    screen_scroll = player.move(direction_vect)
 
-    # update player
+    # update all objects
+    world.update(screen_scroll)
     player.update()
-
-    # update the enemies
     for enemy in enemy_list:
+        enemy.ai(screen_scroll)
         enemy.update()
-
-    # update bow and arrow
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group.sprites():
-        damage, damage_pos = arrow.update(enemy_list)
+        damage, damage_pos = arrow.update(enemy_list, screen_scroll)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), RED)
             damage_text_group.add(damage_text)
     damage_text_group.update()
-    item_group.update(player)
+    item_group.update(screen_scroll, player)
     
+    # draw all objects
+    world.draw(WIN)
     player.draw(WIN)
     bow.draw(WIN)
     for arrow in arrow_group.sprites():
@@ -198,8 +250,7 @@ while running:
     damage_text_group.draw(WIN)
     item_group.draw(WIN)
     draw_info_panel()
-    score_coin.draw(WIN)
-    
+    score_coin.draw(WIN)    
     
     # event loop
     for event in pg.event.get():

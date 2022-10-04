@@ -7,6 +7,11 @@ ITEM_SCALE = 3  # scale raw image - do not alter
 POTION_SCALE = 2  # scale raw image - do not alter
 ANIMATION_SPEED = 70  # ms between frames
 ITEM_ANIMATION_SPEED = 150  # ms between frames
+TILESIZE = 16 * SCALE  # px
+TILE_TYPES = 18  # how many tile images are imported
+MAP_ROWS = 150
+MAP_COLS = 150
+SCROLL_THRESH = 200  # px from edge of screen to begin scrolling the camera
 
 SPEED = 5  # px per frame
 ELF_OFFSET = 12  # px adjustment - do not alter

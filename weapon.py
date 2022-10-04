@@ -69,15 +69,15 @@ class Arrow(pg.sprite.Sprite):
         self.dx = math.cos(math.radians(self.angle)) * ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * ARROW_SPEED)
 
-    def update(self, enemy_list):
+    def update(self, enemy_list, screen_scroll):
 
-        # reset variable
+        # reset variables
         damage = 0
         damage_pos = None
 
-        # reposition based on speed
-        self.rect.x += self.dx
-        self.rect.y += self.dy
+        # reposition based on speed and screen scroll
+        self.rect.x += self.dx + screen_scroll[0]
+        self.rect.y += self.dy + screen_scroll[1]
 
         # check if offscreen
         if self.rect.right < 0 or self.rect.left > WIDTH or self.rect.bottom < 0 or self.rect.top > HEIGHT:

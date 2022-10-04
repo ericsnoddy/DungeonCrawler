@@ -3,7 +3,7 @@ import pygame as pg
 from constants import ITEM_ANIMATION_SPEED, ELF_HEALTH, POTION_STRENGTH
 
 class Item(pg.sprite.Sprite):
-    def __init__(self, x, y, item_type, animation_list):
+    def __init__(self, x, y, item_type, animation_list, dummy_coin=False):
         super().__init__()
 
         self.item_type = item_type  # 0: coin, 1: health potion
@@ -13,7 +13,16 @@ class Item(pg.sprite.Sprite):
         self.image = self.animation_list[self.frame_index]
         self.rect = self.image.get_rect(center=(x, y))
 
-    def update(self, player):
+        self.dummy_coin = dummy_coin
+
+    def update(self, screen_scroll, player):
+
+        # doesn't apply to dummy coin
+        if not self.dummy_coin:
+
+            # reposition based on screen scroll
+            self.rect.x += screen_scroll[0]
+            self.rect.y += screen_scroll[1]
 
         # check if item collected
         if self.rect.colliderect(player.rect):
