@@ -11,11 +11,9 @@ from pygame.locals import *
 from constants import (
     WIDTH, HEIGHT, FPS, 
     TILESIZE, TILE_TYPES, MAP_ROWS, MAP_COLS,
-    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, 
-    SPEED, ELF_HEALTH, 
+    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, SPEED,
     BG, RED, WHITE, PANEL
 )
-from character import Character
 from weapon import Weapon
 from items import Item
 from world import World
@@ -139,7 +137,7 @@ for row in range(MAP_ROWS):
     r = [-1] * MAP_COLS  # '*' operator acts to create a list with MAP_COLS number of values
     world_data.append(r)
 
-
+# overwrite the -1s in world_data list where applicable
 with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
     csv_reader = reader(csv_file, delimiter=',')
     for x, row in enumerate(csv_reader):

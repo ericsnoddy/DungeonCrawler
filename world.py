@@ -36,10 +36,11 @@ class World:
                     # replace item with corresponding floor tile
                 elif tile == 10:
                     self.item_list.append(Item(image_x, image_y, 1, [red_potion_image]))
-                    # player character
+                    # PLAYER CHARACTER
                 elif tile == 11:
                     self.player = Character(image_x, image_y, ELF_HEALTH, mob_animations, 0)
                 elif tile == 12:
+                    # ENEMIES
                     self.enemies.append(Character(image_x, image_y, 100, mob_animations, 1))
                 elif tile == 13:
                     self.enemies.append(Character(image_x, image_y, 100, mob_animations, 2))
@@ -56,6 +57,7 @@ class World:
                     # -1 means do not draw an image
                     self.map_tiles.append(tile_data)
 
+                # spaces with items/enemies need to have a floor tile placed underneath
                 if tile >= 9 and tile <= 17:
                     tile_data[0] = tile_list[0]
     
