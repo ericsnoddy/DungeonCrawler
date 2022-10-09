@@ -1,5 +1,3 @@
-import pygame as pg
-
 from items import Item
 from character import Character
 from constants import TILESIZE, ELF_HEALTH
@@ -39,26 +37,18 @@ class World:
                     # PLAYER CHARACTER
                 elif tile == 11:
                     self.player = Character(image_x, image_y, ELF_HEALTH, mob_animations, 0)
-                elif tile == 12:
+
+                    # ENEMIES: tiles 12-17
+                elif tile in range(12, 18):
                     # ENEMIES
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 1))
-                elif tile == 13:
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 2))
-                elif tile == 14:
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 3))
-                elif tile == 15:
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 4))
-                elif tile == 16:
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 5))
-                elif tile == 17:
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 6))
+                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, tile - 11))
 
                 if tile >= 0:
                     # -1 means do not draw an image
                     self.map_tiles.append(tile_data)
 
-                # spaces with items/enemies need to have a floor tile placed underneath
-                if tile >= 9 and tile <= 17:
+                # spaces with items/enemies need to have a floor tile replaced underneath
+                if tile in range(9, 18):
                     tile_data[0] = tile_list[0]
     
     def update(self, screen_scroll):
