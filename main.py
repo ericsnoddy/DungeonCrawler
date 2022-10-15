@@ -218,19 +218,19 @@ while running:
         direction_vect[1] = -SPEED
     
     # move the player
-    screen_scroll = player.move(direction_vect)
+    screen_scroll = player.move(direction_vect, world.obstacle_tiles)
 
     # update all objects
     world.update(screen_scroll)
     player.update()
     for enemy in enemy_list:
-        enemy.ai(screen_scroll)
+        enemy.ai(player, world.obstacle_tiles, screen_scroll)
         enemy.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group.sprites():
-        damage, damage_pos = arrow.update(enemy_list, screen_scroll)
+        damage, damage_pos = arrow.update(world.obstacle_tiles, enemy_list, screen_scroll)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), RED)
             damage_text_group.add(damage_text)

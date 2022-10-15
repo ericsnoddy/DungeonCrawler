@@ -69,7 +69,7 @@ class Arrow(pg.sprite.Sprite):
         self.dx = math.cos(math.radians(self.angle)) * ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * ARROW_SPEED)
 
-    def update(self, enemy_list, screen_scroll):
+    def update(self, obstacle_tiles, enemy_list, screen_scroll):
 
         # reset variables
         damage = 0
@@ -78,6 +78,11 @@ class Arrow(pg.sprite.Sprite):
         # reposition based on speed and screen scroll
         self.rect.x += self.dx + screen_scroll[0]
         self.rect.y += self.dy + screen_scroll[1]
+
+        # check collision with obstacle
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                self.kill()
 
         # check if offscreen
         if self.rect.right < 0 or self.rect.left > WIDTH or self.rect.bottom < 0 or self.rect.top > HEIGHT:
@@ -89,6 +94,7 @@ class Arrow(pg.sprite.Sprite):
                 damage = 10 + randint(-5, 5)
                 damage_pos = enemy.rect
                 enemy.health -= damage
+                enemy.hit = True
                 self.kill() # remove arrow
                 break   # one enemy per arrow
         

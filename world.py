@@ -36,12 +36,16 @@ class World:
                     self.item_list.append(Item(image_x, image_y, 1, [red_potion_image]))
                     # PLAYER CHARACTER
                 elif tile == 11:
-                    self.player = Character(image_x, image_y, ELF_HEALTH, mob_animations, 0)
+                    self.player = Character(image_x, image_y, ELF_HEALTH, mob_animations, 0, 1)
 
-                    # ENEMIES: tiles 12-17
-                elif tile in range(12, 18):
+                    # ENEMIES: tiles 12-16
+                elif tile in range(12, 17):
                     # ENEMIES
-                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, tile - 11))
+                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, tile - 11, 1))
+                elif tile == 17:
+                    # Boss
+                    self.enemies.append(Character(image_x, image_y, 100, mob_animations, 6, 2, True))
+
 
                 if tile >= 0:
                     # -1 means do not draw an image

@@ -14,6 +14,11 @@ MAP_COLS = 150
 SCROLL_THRESH = 200  # px from edge of screen to begin scrolling the camera
 
 SPEED = 5  # px per frame
+ENEMY_SPEED = 4  # px per frame
+ENEMY_RANGE = 50  # px
+ATTACK_RANGE = 60  # px
+HIT_COOLDOWN = 1000  # ms
+STUN_COOLDOWN = 200  # ms
 ELF_OFFSET = 12  # px adjustment - do not alter
 BOW_COOLDOWN = 300  # ms fire rate
 ARROW_SPEED = 10  # px per frame
