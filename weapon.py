@@ -1,12 +1,12 @@
 # std lib
-import math
+from math import atan2, cos, sin, radians, degrees
 from random import randint
 
 # installed
 import pygame as pg
 
 # local
-from constants import WIDTH, HEIGHT, BOW_COOLDOWN, ARROW_SPEED
+from constants import WIDTH, HEIGHT, BOW_COOLDOWN, ARROW_SPEED, FIREBALL_SPEED, FIREBALL_DMG
 from debug import debug
 
 
@@ -31,7 +31,7 @@ class Weapon:
         y_dist = -(mouse_pos[1] - self.rect.centery)   # neg b/c pygame reverses y-axis
         # calc the angle in degrees where E:0, N: 90, W: 180, S: -90
         # using the arc-tangent of the distance y/x method
-        self.angle = math.degrees(math.atan2(y_dist, x_dist))
+        self.angle = degrees(atan2(y_dist, x_dist))
 
         # shooting
         arrow = None
@@ -53,9 +53,7 @@ class Weapon:
         y_adjust = self.rect.centery - self.image.get_height()//2
         surf.blit(self.image, (x_adjust, y_adjust))
 
-        # debug([
-        #     f'{self.angle}'
-        # ])
+
 
 class Arrow(pg.sprite.Sprite):
     def __init__(self, image, x, y, angle):
@@ -66,8 +64,8 @@ class Arrow(pg.sprite.Sprite):
         self.image = pg.transform.rotate(self.original_image, self.angle - 90)
         self.rect = self.image.get_rect(center = (x,y))
         # calc hor and vert speeds based on angle (neg b/c pygame reverses y-axis)
-        self.dx = math.cos(math.radians(self.angle)) * ARROW_SPEED
-        self.dy = -(math.sin(math.radians(self.angle)) * ARROW_SPEED)
+        self.dx = cos(radians(self.angle)) * ARROW_SPEED
+        self.dy = -(sin(radians(self.angle)) * ARROW_SPEED)
 
     def update(self, obstacle_tiles, enemy_list, screen_scroll):
 
@@ -99,6 +97,46 @@ class Arrow(pg.sprite.Sprite):
                 break   # one enemy per arrow
         
         return damage, damage_pos
+
+    def draw(self, surf):
+
+        x_adjust = self.rect.centerx - self.image.get_width()//2
+        y_adjust = self.rect.centery - self.image.get_height()//2
+        surf.blit(self.image, (x_adjust, y_adjust))
+
+
+
+class Fireball(pg.sprite.Sprite):
+    def __init__(self, image, x, y, player):
+        super().__init__()
+
+        self.original_image = image
+        x_dist = player.rect.centerx - x
+        y_dist = -(player.rect.centery - y)
+
+        self.angle = degrees(atan2(y_dist, x_dist)) 
+        self.image = pg.transform.rotate(self.original_image, self.angle - 90)
+        self.rect = self.image.get_rect(center = (x,y))
+        # calc hor and vert speeds based on angle (neg b/c pygame reverses y-axis)
+        self.dx = cos(radians(self.angle)) * FIREBALL_SPEED
+        self.dy = -(sin(radians(self.angle)) * FIREBALL_SPEED)
+
+
+    def update(self, screen_scroll, player):
+
+        # reposition based on speed and screen scroll
+        self.rect.x += self.dx + screen_scroll[0]
+        self.rect.y += self.dy + screen_scroll[1]
+
+        # check if fireball has gone offscreen
+        if self.rect.right < 0 or self.rect.left > WIDTH or self.rect.bottom < 0 or self.rect.top > HEIGHT:
+            self.kill()
+
+        # check collision with player
+        if player.rect.colliderect(self.rect) and not player.hit:
+            player.hit = True
+            player.last_hit = pg.time.get_ticks()
+            player.health -= FIREBALL_DMG
 
     def draw(self, surf):
 

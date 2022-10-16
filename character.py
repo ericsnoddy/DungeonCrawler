@@ -1,11 +1,14 @@
+# sys
 from math import sqrt
+
 # installed
 import pygame as pg
 
 # local
+from weapon import Fireball
 from constants import (
     WIDTH, HEIGHT, TILESIZE, SCROLL_THRESH, ANIMATION_SPEED, 
-    ENEMY_SPEED, ENEMY_RANGE, ATTACK_RANGE, HIT_COOLDOWN, STUN_COOLDOWN,
+    ENEMY_SPEED, ENEMY_RANGE, ENEMY_DMG, ATTACK_RANGE, HIT_COOLDOWN, STUN_COOLDOWN, FIREBALL_COOLDOWN, FIREBALL_RANGE,
     ELF_OFFSET, SCALE, RED
 )
 
@@ -27,16 +30,19 @@ class Character:
         self.hit = False
         self.last_hit = pg.time.get_ticks()
         self.stunned = False
-
+        self.last_attack = pg.time.get_ticks()
+        
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pg.Rect(0, 0, TILESIZE * size, TILESIZE * size)
         self.rect.center = (x, y)
 
         
 
-    def move(self, direction_vect, obstacle_tiles):
+    def move(self, direction_vect, obstacle_tiles, exit_tile=None):
 
+        # reset variables
         screen_scroll = [0, 0]
+        level_complete = False        
 
         # infer image direction from x-axis movement
         if direction_vect[0] < 0:
@@ -72,8 +78,15 @@ class Character:
                     self.rect.top = obstacle[1].bottom
 
 
-        # only applies to player character
+        # only applies to PLAYER CHARACTER
         if self.char_type == 0:
+
+            # check collision with exit tile
+            if exit_tile[1].colliderect(self.rect):
+                # be sure player is close to center of ladder
+                exit_dist = sqrt(((self.rect.centerx - exit_tile[1].centerx) ** 2 + (self.rect.centery - exit_tile[1].centery) ** 2))
+                if exit_dist < 15:
+                    level_complete = True
 
             # update scroll
             # move camera horizontrally
@@ -91,14 +104,14 @@ class Character:
             if self.rect.top < SCROLL_THRESH:
                 screen_scroll[1] = SCROLL_THRESH - self.rect.top
                 self.rect.top = SCROLL_THRESH
-            
 
-        return screen_scroll
+        return screen_scroll, level_complete
 
-    def ai(self, player, obstacle_tiles, screen_scroll):
+    def ai(self, player, obstacle_tiles, screen_scroll, fireball_image):
 
         ai_vect = pg.math.Vector2(0, 0)
         clipped_line = ()
+        fireball = None
 
         # reposition the mobs based on screen scroll
         self.rect.x += screen_scroll[0]
@@ -132,9 +145,17 @@ class Character:
 
                 # attack player
                 if dist < ATTACK_RANGE and not player.hit:
-                    player.health -= 10
+                    player.health -= ENEMY_DMG
                     player.hit = True
                     player.last_hit = pg.time.get_ticks()
+
+                # boss enemies shoot fireballs
+                if self.is_boss:
+                    if dist < FIREBALL_RANGE:
+                        now = pg.time.get_ticks()
+                        if now - self.last_attack >= FIREBALL_COOLDOWN:
+                            fireball = Fireball(fireball_image, self.rect.centerx, self.rect.centerx, player)
+                            self.last_attack = now
 
             # check if hit
             if self.hit:
@@ -148,6 +169,7 @@ class Character:
             if pg.time.get_ticks() - self.last_hit > STUN_COOLDOWN:
                 self.stunned = False
 
+        return fireball
 
     def update_action(self, new_action):
         if self.action != new_action:

@@ -9,10 +9,10 @@ from pygame.locals import *
 
 # local
 from constants import (
-    WIDTH, HEIGHT, FPS, 
+    FIREBALL_SCALE, WIDTH, HEIGHT, FPS, 
     TILESIZE, TILE_TYPES, MAP_ROWS, MAP_COLS,
-    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, SPEED,
-    BG, RED, WHITE, PANEL
+    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, FIREBALL_SCALE, SPEED,
+    BG, RED, PINK, WHITE, BLACK, PANEL
 )
 from weapon import Weapon
 from items import Item
@@ -32,9 +32,8 @@ font = pg.font.Font(join('assets', 'fonts', 'AtariClassic.ttf'), 20)
 
 # define game variables
 level = 1
+start_intro = True
 screen_scroll = [0, 0]
-
-
 
 
 
@@ -74,6 +73,26 @@ def draw_info_panel():
     # show score
     draw_text(f'x{player.score}', font, WHITE, WIDTH - 100, 15)
 
+# function to reset level
+def reset_level():
+    
+    # empty groups
+    damage_text_group.empty()
+    arrow_group.empty()
+    item_group.empty()
+    fireball_group.empty()
+
+    # create empty tile list
+    # create a list of a list of '-1's populating entire map ROWS*COLS
+    data = []
+    for _ in range(MAP_ROWS):
+        r = [-1] * MAP_COLS  # '*' operator acts to create a list with MAP_COLS number of values
+        data.append(r)
+    
+    return data
+
+
+
 # displaying damage
 class DamageText(pg.sprite.Sprite):
     def __init__(self, x, y, damage, color):
@@ -97,9 +116,34 @@ class DamageText(pg.sprite.Sprite):
             self.kill()
 
 
+class ScreenWipe():
+    def __init__(self, wipe_type, color, speed):
+        self.wipe_type = wipe_type
+        self.color = color
+        self.speed = speed
+        self.wipe_counter = 0
+        
+    def wipe(self):
+        wipe_complete = False
+        self.wipe_counter += self.speed
+        if self.wipe_type == 'shutter':
+            # shutter open wipe
+            pg.draw.rect(WIN, self.color, (0 - self.wipe_counter, 0, WIDTH // 2, HEIGHT))
+            pg.draw.rect(WIN, self.color, (WIDTH // 2 + self.wipe_counter, 0, WIDTH, HEIGHT))
+            pg.draw.rect(WIN, self.color, (0, 0 - self.wipe_counter, WIDTH, HEIGHT // 2))
+            pg.draw.rect(WIN, self.color, (0, HEIGHT // 2 + self.wipe_counter, WIDTH, HEIGHT))
 
+            if self.wipe_counter >= WIDTH:
+                wipe_complete = True
 
+        elif self.wipe_type == 'curtain':
+            # curtain wipe
+            pg.draw.rect(WIN, self.color, (0, 0, WIDTH, 0 + self.wipe_counter))
 
+            if self.wipe_counter >= HEIGHT:
+                wipe_complete = True
+        
+        return wipe_complete
 
 ### GAME SETUP ###
 
@@ -117,12 +161,13 @@ red_potion = scale_img(pg.image.load(join('assets', 'images', 'items', 'potion_r
 
 # load weapon images
 bow_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'bow.png')).convert_alpha(), WEAP_SCALE)
-arrow_image = pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha()
-# fireball_image = pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha()
+arrow_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'arrow.png')).convert_alpha(), WEAP_SCALE)
+fireball_image = scale_img(pg.image.load(join('assets', 'images', 'weapons', 'fireball.png')).convert_alpha(), FIREBALL_SCALE)
 
 item_images = []
 item_images.append(coin_images)
 item_images.append(red_potion)
+
 
 # load tile map images
 tile_list = []
@@ -130,19 +175,6 @@ for x in range(TILE_TYPES):
     tile_image = pg.image.load(join('assets', 'images', 'tiles', f'{x}.png'))
     tile_image = pg.transform.scale(tile_image, (TILESIZE, TILESIZE))
     tile_list.append(tile_image)
-
-# create a list of a list of '-1's populating entire map ROWS*COLS
-world_data = []
-for row in range(MAP_ROWS):
-    r = [-1] * MAP_COLS  # '*' operator acts to create a list with MAP_COLS number of values
-    world_data.append(r)
-
-# overwrite the -1s in world_data list where applicable
-with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
-    csv_reader = reader(csv_file, delimiter=',')
-    for x, row in enumerate(csv_reader):
-        for y, tile in enumerate(row):
-            world_data[x][y] = int(tile)
 
 
 # build nested animations list by character, action, and frame_index
@@ -162,9 +194,28 @@ for mob_type in mob_types:
         animation_list.append(temp_list)
     mob_animations.append(animation_list)
 
+
+# create a list of a list of '-1's populating entire map ROWS*COLS
+world_data = []
+for row in range(MAP_ROWS):
+    r = [-1] * MAP_COLS  # '*' operator acts to create a list with MAP_COLS number of values
+    world_data.append(r)
+
+# overwrite the -1s in world_data list where applicable
+with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
+    csv_reader = reader(csv_file, delimiter=',')
+    for x, row in enumerate(csv_reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+
 # create world
 world = World()
 world.process_data(world_data, tile_list, item_images, mob_animations)
+
+
+
+
+
 
 # create entities
 player = world.player
@@ -177,6 +228,7 @@ bow = Weapon(bow_image, arrow_image)
 damage_text_group = pg.sprite.Group()
 arrow_group = pg.sprite.Group()
 item_group = pg.sprite.Group()
+fireball_group = pg.sprite.Group()
 
 score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
@@ -191,7 +243,9 @@ moving_u = False
 moving_d = False
 
 
-
+# create screen wipes
+intro_wipe = ScreenWipe('shutter', BLACK, 4)
+death_wipe = ScreenWipe('curtain', PINK, 4)
 
 
 ### GAME LOOP ###
@@ -205,38 +259,47 @@ while running:
     # bg
     WIN.fill(BG)
 
-    # player movement
-    direction_vect = pg.math.Vector2(0,0)
+    # do while alive
+    if player.alive:
 
-    if moving_r:
-        direction_vect[0] = SPEED
-    if moving_l:
-        direction_vect[0] = -SPEED
-    if moving_d:
-        direction_vect[1] = SPEED
-    if moving_u:
-        direction_vect[1] = -SPEED
-    
-    # move the player
-    screen_scroll = player.move(direction_vect, world.obstacle_tiles)
+        # player movement
+        direction_vect = pg.math.Vector2(0,0)
 
-    # update all objects
-    world.update(screen_scroll)
-    player.update()
-    for enemy in enemy_list:
-        enemy.ai(player, world.obstacle_tiles, screen_scroll)
-        enemy.update()
-    arrow = bow.update(player)
-    if arrow:
-        arrow_group.add(arrow)
-    for arrow in arrow_group.sprites():
-        damage, damage_pos = arrow.update(world.obstacle_tiles, enemy_list, screen_scroll)
-        if damage:
-            damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), RED)
-            damage_text_group.add(damage_text)
-    damage_text_group.update()
-    item_group.update(screen_scroll, player)
+        if moving_r:
+            direction_vect[0] = SPEED
+        if moving_l:
+            direction_vect[0] = -SPEED
+        if moving_d:
+            direction_vect[1] = SPEED
+        if moving_u:
+            direction_vect[1] = -SPEED
+        
+        # move the player
+        screen_scroll, level_complete = player.move(direction_vect, world.obstacle_tiles, world.exit_tile)
+
+        # update all objects
+        world.update(screen_scroll)
+        player.update()
+        for enemy in enemy_list:
+            fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+            if fireball:
+                fireball_group.add(fireball)
+            if enemy.alive:
+                enemy.update()
+        arrow = bow.update(player)
+        if arrow:
+            arrow_group.add(arrow)
+        for arrow in arrow_group.sprites():
+            damage, damage_pos = arrow.update(world.obstacle_tiles, enemy_list, screen_scroll)
+            if damage:
+                damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), RED)
+                damage_text_group.add(damage_text)
+        damage_text_group.update()
+        fireball_group.update(screen_scroll, player)
+        item_group.update(screen_scroll, player)
     
+
+
     # draw all objects
     world.draw(WIN)
     player.draw(WIN)
@@ -245,11 +308,75 @@ while running:
         arrow.draw(WIN)
     for enemy in enemy_list:
         enemy.draw(WIN)
+    for fireball in fireball_group.sprites():
+        fireball.draw(WIN)
     damage_text_group.draw(WIN)
     item_group.draw(WIN)
     draw_info_panel()
-    score_coin.draw(WIN)    
-    
+    score_coin.draw(WIN)
+
+    # check for level complete
+    if level_complete:
+        start_intro = True
+        level += 1
+        world_data = reset_level()
+
+        # overwrite the -1s in world_data list where applicable
+        with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
+            csv_reader = reader(csv_file, delimiter=',')
+            for x, row in enumerate(csv_reader):
+                for y, tile in enumerate(row):
+                    world_data[x][y] = int(tile)
+
+        # create next world (copy/paste job from above)
+        world = World()
+        world.process_data(world_data, tile_list, item_images, mob_animations)
+
+        # save variables / create player / restore variables
+        temp_hp = player.health
+        temp_score = player.score
+        player = world.player
+        player.health = temp_hp
+        player.score = temp_score
+
+        # populate level
+        enemy_list = world.enemies
+        score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
+        item_group.add(score_coin)
+        for item in world.item_list:
+            item_group.add(item)
+
+    # show intro
+    if start_intro:
+        done = intro_wipe.wipe()
+        if done:
+            start_intro = False
+            intro_wipe.wipe_counter = 0
+
+    # show death screen
+    if not player.alive:
+        done = death_wipe.wipe()
+        if done:
+            death_wipe.wipe_counter = 0
+            # back to intro wipe
+            start_intro = True
+
+            # copy/paste job to reset level - shitty redundancy
+            world_data = reset_level()
+            with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
+                csv_reader = reader(csv_file, delimiter=',')
+                for x, row in enumerate(csv_reader):
+                    for y, tile in enumerate(row):
+                        world_data[x][y] = int(tile)
+            world = World()
+            world.process_data(world_data, tile_list, item_images, mob_animations)
+            player = world.player
+            enemy_list = world.enemies
+            score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
+            item_group.add(score_coin)
+            for item in world.item_list:
+                item_group.add(item)
+
     # event loop
     for event in pg.event.get():
 
