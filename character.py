@@ -218,4 +218,5 @@ class Character:
             surf.blit(flipped_image, (self.rect.x, self.rect.y - ELF_OFFSET * SCALE))
         else:
             surf.blit(flipped_image, self.rect)
-        pg.draw.rect(surf, RED, self.rect, 1)
+        # HITBOX
+        # pg.draw.rect(surf, RED, self.rect, 1)
