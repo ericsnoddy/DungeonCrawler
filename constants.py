@@ -2,6 +2,7 @@ WIDTH = 800
 HEIGHT = 600
 FPS = 60
 SCALE = 3  # scale raw image - do not alter
+BUTTON_SCALE = 1  # scale raw image - do not alter
 WEAP_SCALE = 1.5  # scale raw image - do not alter
 ITEM_SCALE = 3  # scale raw image - do not alter
 POTION_SCALE = 2  # scale raw image - do not alter

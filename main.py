@@ -8,15 +8,16 @@ import pygame as pg
 from pygame.locals import *
 
 # local
-from constants import (
-    FIREBALL_SCALE, WIDTH, HEIGHT, FPS, 
-    TILESIZE, TILE_TYPES, MAP_ROWS, MAP_COLS,
-    SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, FIREBALL_SCALE, SPEED,
-    BG, RED, PINK, WHITE, BLACK, PANEL
-)
 from weapon import Weapon
 from items import Item
 from world import World
+from button import Button
+from constants import (
+    FIREBALL_SCALE, WIDTH, HEIGHT, FPS, 
+    TILESIZE, TILE_TYPES, MAP_ROWS, MAP_COLS,
+    SCALE, BUTTON_SCALE, WEAP_SCALE, ITEM_SCALE, POTION_SCALE, FIREBALL_SCALE, SPEED,
+    BG, RED, PINK, WHITE, BLACK, PANEL
+)
 
 
 
@@ -147,6 +148,9 @@ class ScreenWipe():
 
 ### GAME SETUP ###
 
+# load button images
+restart_img = scale_img(pg.image.load(join('assets', 'images', 'buttons', 'button_restart.png')).convert_alpha(), BUTTON_SCALE)
+
 # load heart images
 heart_empty = scale_img(pg.image.load(join('assets', 'images', 'items', 'heart_empty.png')).convert_alpha(), ITEM_SCALE)
 heart_half = scale_img(pg.image.load(join('assets', 'images', 'items', 'heart_half.png')).convert_alpha(), ITEM_SCALE)
@@ -247,6 +251,8 @@ moving_d = False
 intro_wipe = ScreenWipe('shutter', BLACK, 4)
 death_wipe = ScreenWipe('curtain', PINK, 4)
 
+# buttons
+restart_btn = Button((WIDTH - restart_img.get_width()) // 2, (HEIGHT - restart_img.get_height()) // 2, restart_img)
 
 ### GAME LOOP ###
 
@@ -357,25 +363,27 @@ while running:
     if not player.alive:
         done = death_wipe.wipe()
         if done:
-            death_wipe.wipe_counter = 0
-            # back to intro wipe
-            start_intro = True
+            is_clicked = restart_btn.draw(WIN)
+            if is_clicked:
+                death_wipe.wipe_counter = 0
+                # back to intro wipe
+                start_intro = True
 
-            # copy/paste job to reset level - shitty redundancy
-            world_data = reset_level()
-            with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
-                csv_reader = reader(csv_file, delimiter=',')
-                for x, row in enumerate(csv_reader):
-                    for y, tile in enumerate(row):
-                        world_data[x][y] = int(tile)
-            world = World()
-            world.process_data(world_data, tile_list, item_images, mob_animations)
-            player = world.player
-            enemy_list = world.enemies
-            score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
-            item_group.add(score_coin)
-            for item in world.item_list:
-                item_group.add(item)
+                # copy/paste job to reset level - shitty redundancy
+                world_data = reset_level()
+                with open(join('levels', f'level{level}_data.csv'), newline='') as csv_file:
+                    csv_reader = reader(csv_file, delimiter=',')
+                    for x, row in enumerate(csv_reader):
+                        for y, tile in enumerate(row):
+                            world_data[x][y] = int(tile)
+                world = World()
+                world.process_data(world_data, tile_list, item_images, mob_animations)
+                player = world.player
+                enemy_list = world.enemies
+                score_coin = Item(WIDTH - 115, 23, 0, coin_images, True)
+                item_group.add(score_coin)
+                for item in world.item_list:
+                    item_group.add(item)
 
     # event loop
     for event in pg.event.get():
