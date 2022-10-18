@@ -15,7 +15,7 @@ class Item(pg.sprite.Sprite):
 
         self.dummy_coin = dummy_coin
 
-    def update(self, screen_scroll, player):
+    def update(self, screen_scroll, player, coin_fx, heal_fx):
 
         # doesn't apply to dummy coin
         if not self.dummy_coin:
@@ -29,8 +29,10 @@ class Item(pg.sprite.Sprite):
             # coin collected
             if self.item_type == 0:
                 player.score += 1
+                coin_fx.play()
             elif self.item_type == 1:
                 player.health += POTION_STRENGTH
+                heal_fx.play()
                 if player.health > ELF_HEALTH:
                     player.health = ELF_HEALTH
 
